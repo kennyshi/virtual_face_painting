@@ -8,6 +8,7 @@
           <%- include('../partials/header'); %>
         </header>
         <h1>Welcome, <%= user.name %>!</h1>
+        <p><a href="/random" class="btn btn-warning btn-lg">Show Random Painting!</a></p>
         <p><a href="/upload" class="btn btn-primary">Upload My Picture</a></p>
         <p><a href="/draw/<%= user.userid %>" class="btn btn-primary">Paint My Picture</a></p>
         <p><a href="/select" class="btn btn-primary">Paint Other's Picture</a></p>

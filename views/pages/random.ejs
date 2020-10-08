@@ -1,0 +1,88 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Random Face Painting</title>
+    <%- include('../partials/head'); %>
+    <link href="/public/css/literallycanvas.css" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no" />
+
+    <style type="text/css">
+      .fs-container {
+        width: 620px;
+        height: <%= image.image.height + 30 %>px;
+        margin: auto;
+      }
+
+      .literally {
+        width: 620px;
+        height: <%= image.image.height + 30 %>px;
+        position: relative;
+      }
+    </style>
+  </head>
+
+  <body class="container">
+    <header>
+      <%- include('../partials/header'); %>
+    </header>
+    <h1>Painted By: <%= drawing.name %></h1>
+    <div class="row">
+      <div class="col-md-8 mx-auto">
+        <div class="fs-container">
+          <div id="lc"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- you really ought to include react-dom, but for react 0.14 you don't strictly have to. -->
+    <script src="/public/js/react-0.14.3.js"></script>
+    <script src="/public/js/literallycanvas.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+
+    <script type="text/javascript">
+      var decodeEntities = (function() {
+        // this prevents any overhead from creating the object each time
+        var element = document.createElement('div');
+
+        function decodeHTMLEntities (str) {
+          if(str && typeof str === 'string') {
+            // strip script/html tags
+            str = str.replace(/<script[^>]*>([\S\s]*?)<\/script>/gmi, '');
+            str = str.replace(/<\/?\w(?:[^"'>]|"[^"]*"|'[^']*')*>/gmi, '');
+            element.innerHTML = str;
+            str = element.textContent;
+            element.textContent = '';
+          }
+
+          return str;
+        }
+
+        return decodeHTMLEntities;
+      })();
+
+      $(document).ready(function() {
+        var backgroundImage = new Image()
+        backgroundImage.src = '<%= image_url %>';
+
+        var lc = LC.init(
+            document.getElementById('lc'),
+            {
+              backgroundShapes: [
+                LC.createShape(
+                  'Image', {x: 0, y: 0, image: backgroundImage, scale: 1}),
+              ],
+              imageURLPrefix: '/public/img/lc-images',
+              toolbarPosition: 'bottom',
+              defaultStrokeWidth: 2,
+              strokeWidths: [1, 2, 3, 5, 30]
+            });
+        
+        <% if (drawing && drawing.snapshot) { %>
+          var snapshot = decodeEntities("<%= drawing.snapshot %>");
+          lc.loadSnapshot(JSON.parse(snapshot));
+        <% } %>
+      });
+    </script>
+  </body>
+</html>

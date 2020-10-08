@@ -203,7 +203,7 @@ app.get('/draw/:targetUserid', isAuthenticated, (req, res) => {
                 }
                 //console.log(req.user.userid + "," + req.params.targetUserid + "," + drawing);
                 res.render('pages/draw', {
-                    image_url: GOOGLE_AUTH_CALLBACK_DOMAIN + '/rawimage/' + req.params.targetUserid,
+                    image_url: googleAuthCallBackDomain + '/rawimage/' + req.params.targetUserid,
                     user: req.user,
                     targetUserid: req.params.targetUserid,
                     image: image,
@@ -238,6 +238,34 @@ app.get('/select', isAuthenticated, (req, res) => {
         })
         .catch(err => res.status(400).json('Error: ' + err));
 });
+
+app.get('/random', isAuthenticated, (req, res) => {
+    Drawing.count().exec(function (err, count) {
+
+        // Get a random entry
+        var random = Math.floor(Math.random() * count)
+      
+        // Again query all users but only fetch one offset by our random #
+        Drawing.findOne().skip(random).exec(
+          function (err, drawing) {
+            if (err) {
+                res.redirect('/error');
+            }
+            Image.findOne({ userid: drawing.target_userid }, (err, image) => {
+                if (err) {
+                    res.redirect('/error');
+                }
+                res.render('pages/random', {
+                    image_url: googleAuthCallBackDomain + '/rawimage/' + drawing.target_userid,
+                    user: req.user,
+                    targetUserid: drawing.target_userid,
+                    image: image,
+                    drawing: drawing
+                });
+            });            
+          });
+      });
+    });
 
 app.get('/error', (req, res) => res.status(500).send("Something is wrong"));
 
