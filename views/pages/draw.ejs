@@ -73,7 +73,7 @@
 
       $(document).ready(function() {
         var backgroundImage = new Image()
-        backgroundImage.src = '<%= image_url %>';
+        backgroundImage.src = "data:image/<%=image.image.contentType%>;base64,<%=image.image.data.toString('base64')%>";
 
         var lc = LC.init(
             document.getElementById('lc'),
