@@ -203,7 +203,7 @@ app.get('/draw/:targetUserid', isAuthenticated, (req, res) => {
                 }
                 //console.log(req.user.userid + "," + req.params.targetUserid + "," + drawing);
                 res.render('pages/draw', {
-                    image_url: '/rawimage/' + req.params.targetUserid,
+                    image_url: GOOGLE_AUTH_CALLBACK_DOMAIN + '/rawimage/' + req.params.targetUserid,
                     user: req.user,
                     targetUserid: req.params.targetUserid,
                     image: image,
