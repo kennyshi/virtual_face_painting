@@ -118,21 +118,28 @@ app.post('/upload', upload.single('image'), (req, res, next) => {
         res.render('pages/auth');
     } else {
         sharp(path.join(__dirname + '/uploads/' + req.file.filename))
-            .resize({ height:550 })
+            .resize({ width:550 })
             .toFile(path.join(__dirname + '/uploads/resized_' + req.file.filename))
             .then(() => {
-                var obj = { 
-                    userid: userProfile.id, 
-                    image: { 
-                        data: fs.readFileSync(path.join(__dirname + '/uploads/resized_' + req.file.filename)), 
-                        contentType: 'image/png'
-                    } 
-                };
-                Image.findOneAndUpdate({ userid: userProfile.id }, obj, {upsert: true}, function(err, doc) {
-                    if (err) return res.send(500, {error: err});
-                    res.redirect('/image/' + userProfile.id);
-                });
-            })
+                sharp(path.join(__dirname + '/uploads/resized_' + req.file.filename))
+                    .metadata()
+                    .then(metadata => {
+                        var obj = { 
+                            userid: userProfile.id, 
+                            name: userProfile.displayName,
+                            image: { 
+                                data: fs.readFileSync(path.join(__dirname + '/uploads/resized_' + req.file.filename)), 
+                                contentType: 'image/png',
+                                width: metadata.width,
+                                height: metadata.height
+                            } 
+                        };
+                        Image.findOneAndUpdate({ userid: userProfile.id }, obj, {upsert: true}, function(err, doc) {
+                            if (err) return res.send(500, {error: err});
+                            res.redirect('/image/' + userProfile.id);
+                        });
+                    });
+                })
             .catch(err => {
                 console.log(err);
             });
@@ -186,11 +193,12 @@ app.get('/draw/:targetUserid', (req, res) => {
                 console.log(err);
                 res.redirect('/error');
             }
-        });
-        res.render('pages/draw', {
-            image_url: '/rawimage/' + req.params.targetUserid,
-            user: userProfile,
-            targetUserid: req.params.targetUserid
+            res.render('pages/draw', {
+                image_url: '/rawimage/' + req.params.targetUserid,
+                user: userProfile,
+                targetUserid: req.params.targetUserid,
+                image: image
+            });
         });
     }
 });

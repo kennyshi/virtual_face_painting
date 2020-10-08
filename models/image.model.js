@@ -3,7 +3,8 @@ const Schema = mongoose.Schema;
 
 const imageSchema = new Schema({
     userid: { type: Number, required: true, unique: true },
-    image: { data: Buffer, contentType: String }
+    name: { type: String, required: true },
+    image: { data: Buffer, contentType: String, width: Number, height: Number }
 }, {
     timestamps: true,
 });
