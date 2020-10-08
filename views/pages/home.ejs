@@ -1,0 +1,11 @@
+<html>
+    <head>
+        <title>Welcome to Virtual Face Painting!</title>
+    </head>
+    <body>
+        <h1>Welcome, <%= user.displayName %></h1>
+        <p><a href="/upload">Upload Profile Picture</a></p>
+        <p><a href="/draw/<%= user.id %>">Draw On My Own Picture</a></p>
+        <p><a href="/select">Draw On Other's Picture</a></p>
+    </body>
+</html>
