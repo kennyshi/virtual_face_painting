@@ -1,11 +1,16 @@
 <html>
     <head>
         <title>Welcome to Virtual Face Painting!</title>
+        <%- include('../partials/head'); %>
     </head>
-    <body>
-        <h1>Welcome, <%= user.displayName %></h1>
-        <p><a href="/upload">Upload Profile Picture</a></p>
-        <p><a href="/draw/<%= user.id %>">Draw On My Own Picture</a></p>
-        <p><a href="/select">Draw On Other's Picture</a></p>
+    <body class="container">
+        <header>
+          <%- include('../partials/header'); %>
+        </header>
+        <h1>Welcome, <%= user.name %>!</h1>
+        <p><a href="/upload" class="btn btn-primary">Upload My Picture</a></p>
+        <p><a href="/draw/<%= user.userid %>" class="btn btn-primary">Paint My Picture</a></p>
+        <p><a href="/select" class="btn btn-primary">Paint Other's Picture</a></p>
+        <p><a href="/auth/logout" class="btn btn-danger">Log Out</a></p>
     </body>
 </html>

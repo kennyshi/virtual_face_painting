@@ -5,8 +5,8 @@ const userSchema = new Schema({
     userid: { type: Number, required: true, unique: true },
     username: { type: String, required: true, unique: true },
     name: { type: String, required: true },
-    school: { type: String, required: true },
-    grade: { type: Number, required: true }
+    school: { type: String },
+    grade: { type: Number }
 }, {
     timestamps: true,
 });

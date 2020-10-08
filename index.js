@@ -11,6 +11,8 @@ const sharp = require('sharp');
 require('dotenv').config();
 // models
 const Image = require('./models/image.model');
+const User = require('./models/user.model');
+const Drawing = require('./models/drawing.model');
 
 
 const app = express();
@@ -37,26 +39,28 @@ connection.once('open', () => {
 app.use(session({
     resave: false,
     saveUninitialized: true,
+    maxAge: 24*60*60*1000,
     secret: process.env.EXPRESS_SESSION_SECRET
 }));
 
 // passport
 var passport = require('passport');
-var userProfile;
 
 app.use(passport.initialize());
 app.use(passport.session());
 
 passport.serializeUser(function(user, cb) {
-  cb(null, user);
+  cb(null, user.id);
 });
 
-passport.deserializeUser(function(obj, cb) {
-  cb(null, obj);
-});
+passport.deserializeUser((id, done) => {
+    User.findById(id).then(user => {
+      done(null, user);
+    });
+  });
 
 /*  Google AUTH  */
-var GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
+var GoogleStrategy = require('passport-google-oauth20').Strategy;
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_AUTH_CLIENT_ID;
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_AUTH_CLIENT_SECRET;
 
@@ -66,10 +70,22 @@ passport.use(new GoogleStrategy({
     clientSecret: GOOGLE_CLIENT_SECRET,
     callbackURL: googleAuthCallBackDomain + "/auth/google/callback"
   },
-  function(accessToken, refreshToken, profile, done) {
-      userProfile=profile;
-      return done(null, userProfile);
-  }
+  (accessToken, refreshToken, profile, done) => {
+        User.findOne({ userid: profile.id })
+            .then(currentUser => {
+                if (currentUser) {
+                    done(null, currentUser);
+                } else {
+                    new User({
+                        userid: profile.id,
+                        username: profile.emails[0].value,
+                        name: profile.displayName
+                      }).save().then((newUser) =>{
+                        done(null, newUser);
+                      });
+                }                
+            })
+    }
 ));
 
 // for image upload
@@ -92,29 +108,29 @@ app.use('/api/drawings', drawingRouter);
 app.use('/api/users', userRouter);
 
 function isAuthenticated(req, res, next) {
-    if (userProfile)
+    if (req.user)
         return next();
     res.render('pages/auth');
   }
 
 // routes for pages
 app.get('/', isAuthenticated, function(req, res) {
-    res.render('pages/home', { user: userProfile });
+    res.render('pages/home', { user: req.user });
 });
 
 // Uploading the image 
 app.get('/upload', isAuthenticated, (req, res) => {
-    Image.findOne({ userid: userProfile.id }, (err, image) => { 
+    Image.findOne({ userid: req.user.userid }, (err, image) => { 
         if (err) { 
             console.log(err); 
         } 
         else { 
-            res.render('pages/upload', { image: image }); 
+            res.render('pages/upload', { image: image, user: req.user }); 
         } 
     }); 
 });
 app.post('/upload', upload.single('image'), (req, res, next) => { 
-    if (!userProfile) {
+    if (!req.user) {
         res.render('pages/auth');
     } else {
         sharp(path.join(__dirname + '/uploads/' + req.file.filename))
@@ -125,8 +141,8 @@ app.post('/upload', upload.single('image'), (req, res, next) => {
                     .metadata()
                     .then(metadata => {
                         var obj = { 
-                            userid: userProfile.id, 
-                            name: userProfile.displayName,
+                            userid: req.user.userid, 
+                            name: req.user.name,
                             image: { 
                                 data: fs.readFileSync(path.join(__dirname + '/uploads/resized_' + req.file.filename)), 
                                 contentType: 'image/png',
@@ -134,9 +150,9 @@ app.post('/upload', upload.single('image'), (req, res, next) => {
                                 height: metadata.height
                             } 
                         };
-                        Image.findOneAndUpdate({ userid: userProfile.id }, obj, {upsert: true}, function(err, doc) {
+                        Image.findOneAndUpdate({ userid: req.user.userid }, obj, {upsert: true}, function(err, doc) {
                             if (err) return res.send(500, {error: err});
-                            res.redirect('/image/' + userProfile.id);
+                            res.redirect('/upload');
                         });
                     });
                 })
@@ -148,66 +164,86 @@ app.post('/upload', upload.single('image'), (req, res, next) => {
 }); 
 
 // Retriving the image 
-app.get('/image/:userid', (req, res) => { 
-    if (!userProfile) {
-        res.render('pages/auth');
-    } else {
-        Image.findOne({ userid: req.params.userid }, (err, image) => { 
-            if (err || !image) { 
-                console.log(err);
-                res.redirect('/error'); 
-            } 
-            else { 
-                res.render('pages/image', { image: image }); 
-            } 
-        }); 
-    }
+app.get('/image/:userid', isAuthenticated, (req, res) => { 
+    Image.findOne({ userid: req.params.userid }, (err, image) => { 
+        if (err || !image) { 
+            console.log(err);
+            res.redirect('/error'); 
+        } 
+        else { 
+            res.render('pages/image', { image: image, user: req.user }); 
+        } 
+    }); 
 }); 
 
 // Retriving the raw image 
-app.get('/rawimage/:userid', (req, res) => { 
-    if (!userProfile) {
-        res.render('pages/auth');
-    } else {
-        Image.findOne({ userid: req.params.userid }, (err, image) => { 
-            if (err || !image) { 
-                console.log(err);
-                res.redirect('/error');
-            } 
-            else { 
-                res.contentType(image.image.contentType);
-                res.end(image.image.data); 
-            } 
-        }); 
-    }
+app.get('/rawimage/:userid', isAuthenticated, (req, res) => { 
+    Image.findOne({ userid: req.params.userid }, (err, image) => { 
+        if (err || !image) { 
+            console.log(err);
+            res.redirect('/error');
+        } 
+        else { 
+            res.contentType(image.image.contentType);
+            res.end(image.image.data); 
+        } 
+    }); 
 }); 
 
 
-app.get('/draw/:targetUserid', (req, res) => {
-    if (!userProfile) {
-        res.render('pages/auth');
-    } else {
-        //console.log("userprofile is " + userProfile.displayName);
-        Image.findOne({ userid: req.params.targetUserid }, (err, image) => {
-            if (err || !image) {
-                console.log(err);
-                res.redirect('/error');
-            }
-            res.render('pages/draw', {
-                image_url: '/rawimage/' + req.params.targetUserid,
-                user: userProfile,
-                targetUserid: req.params.targetUserid,
-                image: image
-            });
+app.get('/draw/:targetUserid', isAuthenticated, (req, res) => {
+    Image.findOne({ userid: req.params.targetUserid }, (err, image) => {
+        if (err || !image) {
+            console.log(err);
+            res.redirect('/error');
+        }
+        Drawing.findOne({ userid: req.user.userid, target_userid: req.params.targetUserid }, (err, drawing) => {
+                if (err) {
+                    res.redirect('/error');
+                }
+                //console.log(req.user.userid + "," + req.params.targetUserid + "," + drawing);
+                res.render('pages/draw', {
+                    image_url: '/rawimage/' + req.params.targetUserid,
+                    user: req.user,
+                    targetUserid: req.params.targetUserid,
+                    image: image,
+                    drawing: drawing
+                });
+            })
         });
-    }
+    });
+
+app.post('/draw/:targetUserid', isAuthenticated, (req, res) => {
+    var drawing = { 
+        userid: req.user.userid, 
+        name: req.user.name,
+        target_userid: req.params.targetUserid,
+        target_name: req.body.target_name,
+        snapshot: req.body.snapshot
+    };
+    Drawing.findOneAndUpdate({ userid: req.user.userid, target_userid: req.params.targetUserid }, drawing, {upsert: true}, (err, doc) => {
+        if (err) return res.send(500, {error: err});
+        res.redirect('/draw/' + req.params.targetUserid);
+    });
+});
+
+
+app.get('/select', isAuthenticated, (req, res) => {
+    Image.find()
+        .then(images => {
+            res.render('pages/select', {
+                user: req.user,
+                images: images
+            });
+        })
+        .catch(err => res.status(400).json('Error: ' + err));
 });
 
 app.get('/error', (req, res) => res.status(500).send("Something is wrong"));
 
 // routes for auth
 app.get('/auth/success', (req, res) => {
-    res.render('pages/success', {user: userProfile});
+    res.render('pages/success', {user: req.user});
   });
 
 app.get('/auth/error', (req, res) => res.send("error logging in"));
@@ -219,18 +255,14 @@ app.get('/auth/google/callback',
   passport.authenticate('google', { failureRedirect: '/auth/error' }),
   function(req, res) {
     // Successful authentication, redirect success.
-    req.session.token = userProfile.id;
     res.redirect('/');
   }
 );
 
 app.get('/auth/logout', (req, res) => {
   req.logout();
-  req.session.token = null;
-  req.session = null;
-  res.redirect('/');
+  res.redirect("/");
 });
-
 
 
 

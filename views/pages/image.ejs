@@ -4,21 +4,18 @@
 <head> 
     <meta charset="UTF-8"> 
     <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
-    <title>Profile Image</title> 
+    <title>Profile Image</title>
+    <%- include('../partials/head'); %>
 </head> 
   
-<body> 
-    <div> 
-        <div> 
-            <div> 
-                <img src="data:image/<%=image.image.contentType%>;base64, 
-                     <%=image.image.data.toString('base64')%>" width="500"> 
-            </div> 
-        </div>  
+<body class="container">
+    <header>
+      <%- include('../partials/header'); %>
+    </header>
+    <div>  
+        <img src="data:image/<%=image.image.contentType%>;base64, 
+                <%=image.image.data.toString('base64')%>" width="500"> 
     </div> 
-    <div>
-        <a href="/">Home</a>
-      </div>
 </body> 
   
 </html> 

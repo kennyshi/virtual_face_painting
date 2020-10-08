@@ -3,13 +3,16 @@
 <html>
   <head>
     <title>Google SignIn</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"> <!-- load bulma css -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"> <!-- load fontawesome -->
       <style>
           body        { padding-top:70px; }
       </style>
   </head>
-  <body>
+  <body class="container">
+    <header>
+      <%- include('../partials/header'); %>
+    </header>
     <div class="container">
       <div class="jumbotron">
           <h1 class="text-primary  text-center"><span class="fa fa-user"></span> Profile Information</h1>
@@ -17,9 +20,9 @@
             <div class="col-sm-6">
                 <div class="well">
                         <p>
-                            <strong>Id</strong>: <%= user.id %><br>
-                            <strong>Email</strong>: <%= user.emails[0].value %><br>
-                            <strong>Name</strong>: <%= user.displayName %>
+                            <strong>Id</strong>: <%= user.userid %><br>
+                            <strong>Email</strong>: <%= user.username %><br>
+                            <strong>Name</strong>: <%= user.name %>
                         </p>
                 </div>
             </div>
