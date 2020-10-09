@@ -15,6 +15,16 @@
             <div class="card-body">
               <h5 class="card-title"><%=images[i].name%></h5>
               <a href="/draw/<%=images[i].userid%>" class="btn btn-primary">Paint <%=images[i].name%></a>
+              <%var hasDrawn = false; 
+                for (var j=0; j<drawings.length; j++) {
+                  if (drawings[j].target_userid == images[i].userid) {
+                      hasDrawn = true;
+                      break;
+                  }
+                }
+                if (hasDrawn) {%>
+                    <a href="/drawdelete/<%=images[i].userid%>" class="btn btn-danger">Delete Painting of <%=images[i].name%></a>
+                <% } %>
             </div>
         </div>
         <% } %>

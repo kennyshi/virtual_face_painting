@@ -16,6 +16,9 @@
     <hr> 
     <div class="row">
         <div class="col-md-8 mx-auto">
+            <% if (drawing_count > 0) {%>
+            <p class="text-danger">Sorry you can't update your picture, because your current picture has been painted by <%= drawing_count %> people.</p>
+            <% } else { %>
             <form action="/upload" method="POST" enctype="multipart/form-data"> 
                 <div> 
                     <label for="image">Upload Image</label> 
@@ -26,6 +29,7 @@
                     <button type="submit" class="btn-primary">Submit</button> 
                 </div> 
             </form> 
+            <% } %>
         </div>
     </div>
   

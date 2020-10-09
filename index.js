@@ -125,7 +125,12 @@ app.get('/upload', isAuthenticated, (req, res) => {
             console.log(err); 
         } 
         else { 
-            res.render('pages/upload', { image: image, user: req.user }); 
+            Drawing.count({ target_userid: req.user.userid }, (err, number) => {
+                if (err) { 
+                    console.log(err); 
+                } 
+                res.render('pages/upload', { image: image, user: req.user, drawing_count: number });
+            });             
         } 
     }); 
 });
@@ -233,12 +238,25 @@ app.post('/draw/:targetUserid', isAuthenticated, (req, res) => {
 app.get('/select', isAuthenticated, (req, res) => {
     Image.find()
         .then(images => {
-            res.render('pages/select', {
-                user: req.user,
-                images: images
-            });
+            Drawing.find({ userid: req.user.userid })
+                .then(drawings => {
+                    res.render('pages/select', {
+                        user: req.user,
+                        images: images,
+                        drawings: drawings
+                    });
+                })
+                .catch(err => res.redirect('/error'));
         })
-        .catch(err => res.status(400).json('Error: ' + err));
+        .catch(err => res.redirect('/error'));
+});
+
+app.get('/drawdelete/:targetUserid', isAuthenticated, (req, res) => {
+    Drawing.deleteOne({ userid: req.user.userid, target_userid: req.params.targetUserid })
+        .then(() => {
+            res.redirect('/select');
+        })
+        .catch(err => res.redirect('/error'));
 });
 
 app.get('/myfaces', isAuthenticated, (req, res) => {
