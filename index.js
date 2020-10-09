@@ -151,6 +151,8 @@ app.post('/upload', upload.single('image'), (req, res, next) => {
                             } 
                         };
                         Image.findOneAndUpdate({ userid: req.user.userid }, obj, {upsert: true}, function(err, doc) {
+                            fs.unlink(path.join(__dirname + '/uploads/' + req.file.filename));
+                            fs.unlink(path.join(__dirname + '/uploads/resized_' + req.file.filename));
                             if (err) return res.send(500, {error: err});
                             res.redirect('/upload');
                         });
@@ -203,7 +205,7 @@ app.get('/draw/:targetUserid', isAuthenticated, (req, res) => {
                 }
                 //console.log(req.user.userid + "," + req.params.targetUserid + "," + drawing);
                 res.render('pages/draw', {
-                    image_url: googleAuthCallBackDomain + '/rawimage/' + req.params.targetUserid,
+                    image_url: '/rawimage/' + req.params.targetUserid,
                     user: req.user,
                     targetUserid: req.params.targetUserid,
                     image: image,
@@ -239,6 +241,23 @@ app.get('/select', isAuthenticated, (req, res) => {
         .catch(err => res.status(400).json('Error: ' + err));
 });
 
+app.get('/myfaces', isAuthenticated, (req, res) => {
+    Drawing.find({ target_userid: req.user.userid })
+        .then(drawings => {
+            Image.findOne({ userid: req.user.userid }, (err, image) => {
+                if (err || !image) {
+                    res.redirect('/error');
+                }
+                res.render('pages/myfaces', {
+                    user: req.user,
+                    drawings: drawings,
+                    image: image
+                });
+            })
+        })
+        .catch(err => res.status(400).json('Error: ' + err));
+});
+
 app.get('/random', isAuthenticated, (req, res) => {
     Drawing.count().exec(function (err, count) {
 
@@ -256,7 +275,7 @@ app.get('/random', isAuthenticated, (req, res) => {
                     res.redirect('/error');
                 }
                 res.render('pages/random', {
-                    image_url: googleAuthCallBackDomain + '/rawimage/' + drawing.target_userid,
+                    image_url: '/rawimage/' + drawing.target_userid,
                     user: req.user,
                     targetUserid: drawing.target_userid,
                     image: image,
@@ -266,6 +285,27 @@ app.get('/random', isAuthenticated, (req, res) => {
           });
       });
     });
+
+app.get('/drawshow/:userid/:targetUserid', isAuthenticated, (req, res) => {
+    Drawing.findOne({ userid: req.params.userid, target_userid: req.params.targetUserid }, 
+        (err, drawing) => {
+          if (err) {
+              res.redirect('/error');
+          }
+          Image.findOne({ userid: drawing.target_userid }, (err, image) => {
+              if (err) {
+                  res.redirect('/error');
+              }
+              res.render('pages/drawshow', {
+                  image_url: '/rawimage/' + drawing.target_userid,
+                  user: req.user,
+                  targetUserid: drawing.target_userid,
+                  image: image,
+                  drawing: drawing
+              });
+          });            
+        });
+});
 
 app.get('/error', (req, res) => res.status(500).send("Something is wrong"));
 

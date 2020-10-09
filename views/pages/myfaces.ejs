@@ -1,0 +1,24 @@
+<html>
+    <head>
+        <title>Welcome to Virtual Face Painting!</title>
+        <%- include('../partials/head'); %>
+    </head>
+    <body class="container">
+        <header>
+          <%- include('../partials/header'); %>
+        </header>
+        <div class="card-deck">
+        <% for (var i=0; i < drawings.length; i++) { %>
+        <div class="card mb-4" style="width: 18rem;">
+            <img class="card-img-top" src="data:image/<%=image.image.contentType%>;base64, 
+                <%=image.image.data.toString('base64')%>" width="100">
+            <div class="card-body">
+              <h5 class="card-title"><%=drawings[i].name%></h5>
+              <a href="/drawshow/<%=drawings[i].userid%>/<%=drawings[i].target_userid%>" class="btn btn-primary">Show Painting By <%=drawings[i].name%></a>
+            </div>
+        </div>
+        <% } %>
+        </div>
+         
+    </body>
+</html>
