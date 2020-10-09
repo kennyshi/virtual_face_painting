@@ -7,11 +7,15 @@
         <header>
           <%- include('../partials/header'); %>
         </header>
-        <h1>Welcome, <%= user.name %>!</h1>
-        <p><a href="/random" class="btn btn-warning btn-lg">Show Random Painting!</a></p>
-        <p><a href="/upload" class="btn btn-primary">Upload My Picture</a></p>
-        <p><a href="/draw/<%= user.userid %>" class="btn btn-primary">Paint My Picture</a></p>
-        <p><a href="/select" class="btn btn-primary">Paint Other's Picture</a></p>
-        <p><a href="/auth/logout" class="btn btn-danger">Log Out</a></p>
+        <h1 class="col-md-8 mx-auto">Welcome, <%= user.name %>!</h1>
+        <div class="row">
+            <div class="col-md-8 mx-auto">
+                <p><a href="/random" class="btn btn-warning btn-lg">Show Random Painting!</a></p>
+                <p><a href="/upload" class="btn btn-primary">Upload My Picture</a></p>
+                <p><a href="/draw/<%= user.userid %>" class="btn btn-primary">Paint My Face</a></p>
+                <p><a href="/select" class="btn btn-primary">Paint Other's Face</a></p>
+                <p><a href="/auth/logout" class="btn btn-danger">Log Out</a></p>
+            </div>
+        </div>
     </body>
 </html>

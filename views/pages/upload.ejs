@@ -12,33 +12,37 @@
     <header>
       <%- include('../partials/header'); %>
     </header>
-    <h1>Upload My Picture</h1> 
+    <h1 class="col-md-8 mx-auto">Upload My Picture</h1> 
     <hr> 
-    <div> 
-        <form action="/upload" method="POST" enctype="multipart/form-data"> 
-            <div> 
-                <label for="image">Upload Image</label> 
-                <input type="file" id="image" class="btn-secondary"
-                       name="image" value="" required> 
-            </div> 
-            <div> 
-                <button type="submit" class="btn-primary">Submit</button> 
-            </div> 
-        </form> 
-    </div> 
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <form action="/upload" method="POST" enctype="multipart/form-data"> 
+                <div> 
+                    <label for="image">Upload Image</label> 
+                    <input type="file" id="image" class="btn-secondary"
+                           name="image" value="" required> 
+                </div> 
+                <div> 
+                    <button type="submit" class="btn-primary">Submit</button> 
+                </div> 
+            </form> 
+        </div>
+    </div>
   
     <hr> 
-    <h1>My Current Picture</h1> 
+    <h1 class="col-md-8 mx-auto">My Current Picture</h1> 
+    <div clas="row">
     <% if (image != null) { %>
-    <div> 
+    <div class="col-md-8 mx-auto"> 
         <img src="data:image/<%=image.image.contentType%>;base64, 
                 <%=image.image.data.toString('base64')%>" width="500"> 
     </div> 
     <% } else { %>
-    <div>
+    <div class="col-md-8 mx-auto">
         <p>No Picture Uploaded</p>
     </div>
     <% } %>
+    </div>
 </body> 
   
 </html> 

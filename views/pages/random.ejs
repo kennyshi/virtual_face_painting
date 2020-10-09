@@ -26,13 +26,21 @@
     <header>
       <%- include('../partials/header'); %>
     </header>
-    <h1>Painted By: <%= drawing.name %></h1>
+    <h1 class="col-md-8 mx-auto">Painted By: <%= drawing.name %></h1>
     <div class="row">
-      <div class="col-md-8 mx-auto">
-        <div class="fs-container">
+        <div class="col-md-8 mx-auto fs-container">
           <div id="lc"></div>
         </div>
-      </div>
+    </div>
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <button class="btn btn-primary" onclick="$('#target').toggle();">
+                Who's This?
+            </button>
+        </div>
+        <div id="target" style="display: none" class="col-md-8 mx-auto">
+            <h2><%= drawing.target_name %></h2>
+        </div>
     </div>
 
     <!-- you really ought to include react-dom, but for react 0.14 you don't strictly have to. -->
@@ -71,11 +79,9 @@
               backgroundShapes: [
                 LC.createShape(
                   'Image', {x: 0, y: 0, image: backgroundImage, scale: 1}),
-              ],
-              imageURLPrefix: '/public/img/lc-images',
-              toolbarPosition: 'bottom',
-              defaultStrokeWidth: 2,
-              strokeWidths: [1, 2, 3, 5, 30]
+              ],    
+              toolbarPosition: 'hidden',
+              tools: [LC.tools.Pan]
             });
         
         <% if (drawing && drawing.snapshot) { %>
