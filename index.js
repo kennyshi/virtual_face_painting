@@ -156,8 +156,12 @@ app.post('/upload', upload.single('image'), (req, res, next) => {
                             } 
                         };
                         Image.findOneAndUpdate({ userid: req.user.userid }, obj, {upsert: true}, function(err, doc) {
-                            fs.unlink(path.join(__dirname + '/uploads/' + req.file.filename));
-                            fs.unlink(path.join(__dirname + '/uploads/resized_' + req.file.filename));
+                            fs.unlink(path.join(__dirname + '/uploads/' + req.file.filename), err => { 
+                                if (err) console.log(err);
+                            });
+                            fs.unlink(path.join(__dirname + '/uploads/resized_' + req.file.filename), err => {
+                                if (err) console.log(err);
+                            });
                             if (err) return res.send(500, {error: err});
                             res.redirect('/upload');
                         });
